@@ -4,9 +4,9 @@ Author: WPDeveloper
 Author URI: https://wpdeveloper.com
 Tags: embed, embed YouTube, embed PDF, Google Docs, Social Feeds
 Requires at least: 4.6
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 4.4.5
+Stable tag: 4.4.7
 License: GPLv3 or later
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -348,6 +348,12 @@ With EmbedPress you can easily create PDF flipbooks. First, upload PDF into your
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+= [4.4.7] – 2025-12-15 =
+- Fixed: Control panel disappearing after embedding a PDF in Elementor.
+- Fixed: Brand logo upload issue from the plugin dashboard.
+- Improved: Instagram Feeds ordering process.
+- Few minor bug fixes and improvements.
 
 = [4.4.6] – 2025-11-27 =
 - Fixed: Height & width parameters not working for embedded Google Photos albums.
