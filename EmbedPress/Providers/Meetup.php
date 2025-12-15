@@ -42,6 +42,19 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	/** inline {@inheritdoc} */
 	protected $responsiveSupport = true;
 
+	/** @var array Array with allowed params for the Meetup Provider */
+	protected $allowedParams = [
+		'maxwidth',
+		'maxheight',
+		'timezone',
+		'date_format',
+		'time_format',
+		'orderby',
+		'order',
+		'per_page',
+		'enable_pagination'
+	];
+
 	/** inline {@inheritdoc} */
 	public function validateUrl(Url $url)
 	{
@@ -197,7 +210,8 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 		$allowed_protocols = wp_allowed_protocols();
 		$allowed_protocols[] = 'data';
 
-
+		// Get parameters using getParams() instead of direct config access
+		$params = $this->getParams();
 
 		// Check if this is an RSS feed URL
 		if ($this->isRssUrl($this->getUrl())) {
@@ -208,11 +222,11 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 
 			// Delegate RSS feed handling to the pro plugin
 			if (class_exists('\Embedpress\Pro\Providers\Meetup')) {
-				$hash = 'mu_' . md5($this->getUrl() . serialize($this->config));
+				$hash = 'mu_' . md5($this->getUrl() . serialize($params));
 				$cache_duration = apply_filters('embedpress_meetup_rss_cache_duration', 3600 * 6); // 6 hour default
 				$filename = wp_get_upload_dir()['basedir'] . "/embedpress/{$hash}.txt";
 
-				return \Embedpress\Pro\Providers\Meetup::handleRssFeed($response, $filename, $this->getUrl(), $cache_duration, $this->config);
+				return \Embedpress\Pro\Providers\Meetup::handleRssFeed($response, $filename, $this->getUrl(), $cache_duration, $params);
 			} else {
 				// Pro plugin not available, show upgrade message
 				return $this->getProUpgradeMessage($response);
@@ -252,8 +266,9 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	 */
 	private function getCachedEventData()
 	{
-		// Include config in cache key so different timezone/format settings create different cache entries
-		$cache_key_data = $this->getUrl() . serialize($this->config);
+		// Include params in cache key so different timezone/format settings create different cache entries
+		$params = $this->getParams();
+		$cache_key_data = $this->getUrl() . serialize($params);
 		$url_hash = md5($cache_key_data);
 		$data_transient_key = 'meetup_event_data_' . $url_hash;
 
@@ -265,8 +280,9 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	 */
 	private function cacheEventData($event_data, $expiration = 3600)
 	{
-		// Include config in cache key so different timezone/format settings create different cache entries
-		$cache_key_data = $this->getUrl() . serialize($this->config);
+		// Include params in cache key so different timezone/format settings create different cache entries
+		$params = $this->getParams();
+		$cache_key_data = $this->getUrl() . serialize($params);
 		$url_hash = md5($cache_key_data);
 		$data_transient_key = 'meetup_event_data_' . $url_hash;
 
@@ -310,17 +326,17 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	 * Format event date with timezone conversion and custom formatting
 	 *
 	 * @param string $date_string The date string to format
-	 * @param array $config Configuration containing timezone and format settings
+	 * @param array $params Parameters containing timezone and format settings
 	 * @return string Formatted date string or HTML with data attributes for JS conversion
 	 */
-	private function formatEventDate($date_string, $config = [])
+	private function formatEventDate($date_string, $params = [])
 	{
 		// Get timezone setting
-		$timezone_setting = isset($config['timezone']) ? $config['timezone'] : 'visitor_timezone';
+		$timezone_setting = isset($params['timezone']) ? $params['timezone'] : 'visitor_timezone';
 
 		// Get date and time format settings
-		$date_format = isset($config['date_format']) ? $config['date_format'] : 'wp_date_format';
-		$time_format = isset($config['time_format']) ? $config['time_format'] : 'wp_time_format';
+		$date_format = isset($params['date_format']) ? $params['date_format'] : 'wp_date_format';
+		$time_format = isset($params['time_format']) ? $params['time_format'] : 'wp_time_format';
 
 		// Resolve WordPress format placeholders
 		if ($date_format === 'wp_date_format') {
@@ -384,16 +400,16 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	 * Format event time only (for end time)
 	 *
 	 * @param string $date_string The date string to format
-	 * @param array $config Configuration containing timezone and format settings
+	 * @param array $params Parameters containing timezone and format settings
 	 * @return string Formatted time string or HTML with data attributes for JS conversion
 	 */
-	private function formatEventTime($date_string, $config = [])
+	private function formatEventTime($date_string, $params = [])
 	{
 		// Get timezone setting
-		$timezone_setting = isset($config['timezone']) ? $config['timezone'] : 'visitor_timezone';
+		$timezone_setting = isset($params['timezone']) ? $params['timezone'] : 'visitor_timezone';
 
 		// Get time format setting
-		$time_format = isset($config['time_format']) ? $config['time_format'] : 'wp_time_format';
+		$time_format = isset($params['time_format']) ? $params['time_format'] : 'wp_time_format';
 
 		// Resolve WordPress format placeholder
 		if ($time_format === 'wp_time_format') {
@@ -450,6 +466,9 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 	 */
 	private function extractFromNextData($event)
 	{
+		// Get parameters for timezone and format settings
+		$params = $this->getParams();
+
 		// Extract basic event info
 		$title = isset($event['title']) ? $event['title'] : '';
 		$description = isset($event['description']) ? $event['description'] : '';
@@ -458,9 +477,9 @@ class Meetup extends ProviderAdapter implements ProviderInterface
 		// Extract date/time with timezone and format settings
 		$date_time = '';
 		if (isset($event['dateTime'])) {
-			$date_time = $this->formatEventDate($event['dateTime'], $this->config);
+			$date_time = $this->formatEventDate($event['dateTime'], $params);
 			if (isset($event['endTime'])) {
-				$end_time = $this->formatEventTime($event['endTime'], $this->config);
+				$end_time = $this->formatEventTime($event['endTime'], $params);
 				$date_time .= ' to ' . $end_time;
 			}
 		}

@@ -3,17 +3,17 @@
  * 
  * Converts UTC timestamps to visitor's local timezone for Meetup embeds
  */
-(function() {
+(function () {
     'use strict';
 
     /**
      * Format date according to the specified format string
      */
     function formatDate(date, format) {
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                       'July', 'August', 'September', 'October', 'November', 'December'];
-        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -21,19 +21,19 @@
             // Year
             'Y': date.getFullYear(),
             'y': String(date.getFullYear()).slice(-2),
-            
+
             // Month
             'F': months[date.getMonth()],
             'M': monthsShort[date.getMonth()],
             'm': String(date.getMonth() + 1).padStart(2, '0'),
             'n': date.getMonth() + 1,
-            
+
             // Day
             'd': String(date.getDate()).padStart(2, '0'),
             'j': date.getDate(),
             'D': daysShort[date.getDay()],
             'l': days[date.getDay()],
-            
+
             // Time
             'H': String(date.getHours()).padStart(2, '0'),
             'h': String(date.getHours() % 12 || 12).padStart(2, '0'),
@@ -69,9 +69,9 @@
 
         console.log('EmbedPress Meetup Timezone: Found ' + elements.length + ' elements to convert');
 
-        elements.forEach(function(element) {
+        elements.forEach(function (element) {
             const utcTimestamp = parseInt(element.getAttribute('data-utc-timestamp'), 10);
-            
+
             if (!utcTimestamp || isNaN(utcTimestamp)) {
                 return;
             }
