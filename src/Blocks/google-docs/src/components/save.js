@@ -4,7 +4,7 @@
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html.js';
 import Logo from '../../../GlobalCoponents/Logo.js';
 import AdTemplate from '../../../GlobalCoponents/ads-template.js';
-import { sanitizeUrl } from '../../../GlobalCoponents/helper.js';
+import { sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper.js';
 
 const { applyFilters } = wp.hooks;
 
@@ -41,6 +41,8 @@ const Save = ({ attributes }) => {
         enableLazyLoad
     } = attributes;
 
+
+
     if (!iframeSrc) {
         return null;
     }
@@ -75,11 +77,13 @@ const Save = ({ attributes }) => {
                                     data-ep-iframe-allowfullscreen="true"
                                     data-ep-iframe-mozallowfullscreen="true"
                                     data-ep-iframe-webkitallowfullscreen="true"
+                                    data-ep-iframe-title={getIframeTitle(iframeSrc)}
                                     style={{ width: unitoption === '%' ? width + '%' : width + 'px', height: height + 'px', maxWidth: '100%' }}
                                 />
                             ) : (
                                 <iframe
                                     src={sanitizeUrl(iframeSrc)}
+                                    title={getIframeTitle(iframeSrc)}
                                     style={{ width: unitoption === '%' ? width + '%' : width + 'px', height: height + 'px', maxWidth: '100%' }}
                                     frameBorder="0"
                                     allowFullScreen="true"

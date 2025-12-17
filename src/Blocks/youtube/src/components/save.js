@@ -6,7 +6,7 @@ const { useBlockProps } = wp.blockEditor;
 /**
  * Internal dependencies
  */
-import { sanitizeUrl } from '../../../GlobalCoponents/helper';
+import { sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 
 const save = ({ attributes }) => {
 	const blockProps = useBlockProps.save();
@@ -21,6 +21,8 @@ const save = ({ attributes }) => {
 
 	// Disable lazy loading if custom player is enabled
 	const shouldLazyLoad = enableLazyLoad && !customPlayer;
+
+
 
 	return (
 		<div {...blockProps}>
@@ -38,6 +40,7 @@ const save = ({ attributes }) => {
 						data-ep-iframe-width={width}
 						data-ep-iframe-height={height}
 						data-ep-iframe-allowfullscreen="true"
+                        data-ep-iframe-title={getIframeTitle(iframeSrc)}
 						style={{ maxWidth: '100%', height: '100%' }}
 					/>
 				) : (
@@ -48,6 +51,7 @@ const save = ({ attributes }) => {
 						width={width}
 						height={height}
 						allowFullScreen
+                        title={getIframeTitle(iframeSrc)}
 					/>
 				)}
 			</div>

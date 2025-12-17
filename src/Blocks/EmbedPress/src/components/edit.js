@@ -60,7 +60,7 @@ import { useCalendly } from "./InspectorControl/calendly.js";
 import { useSpreaker } from "./InspectorControl/spreaker.js";
 import { useGooglePhotos } from "./InspectorControl/google-photos.js";
 import { useMeetup } from "./InspectorControl/meetup.js";
-import { shareIconsHtml } from "../../../GlobalCoponents/helper.js";
+import { shareIconsHtml, getIframeTitle } from "../../../GlobalCoponents/helper.js";
 
 // Initialize block ID removal
 removedBlockID();
@@ -145,6 +145,8 @@ export default function Edit(props) {
         ];
         return dynamicProviders.some(provider => url.includes(provider));
     };
+
+
 
     const _md5ClientId = md5(attributes.clientId || clientId);
 
@@ -382,8 +384,19 @@ export default function Edit(props) {
                         }
                     }
 
+                    let embedHTMLWithTitle = data.embed;
+                    if (embedHTMLWithTitle && embedHTMLWithTitle.includes('<iframe') && !embedHTMLWithTitle.includes('title=')) {
+                        const match = embedHTMLWithTitle.match(/src=["'](.*?)["']/);
+                        if (match && match[1]) {
+                             const title = getIframeTitle(match[1]);
+                             if (title) {
+                                 embedHTMLWithTitle = embedHTMLWithTitle.replace('<iframe', `<iframe title="${title}"`);
+                             }
+                        }
+                    }
+
                     setAttributes({
-                        embedHTML: data.embed,
+                        embedHTML: embedHTMLWithTitle,
                         cannotEmbed: false,
                         editingURL: false,
                         providerName: providerName || '',

@@ -6,7 +6,7 @@ import EmbedLoading from '../../../GlobalCoponents/embed-loading';
 import EmbedPlaceholder from "../../../GlobalCoponents/embed-placeholder";
 import { CalendarIcon } from "../../../GlobalCoponents/icons";
 import EmbedControls from "../../../GlobalCoponents/embed-controls";
-import { sanitizeUrl, isInstagramFeed, isInstagramHashtag } from '../../../GlobalCoponents/helper';
+import { sanitizeUrl, isInstagramFeed, isInstagramHashtag, getIframeTitle } from '../../../GlobalCoponents/helper';
 const { TextControl, PanelBody, ToggleControl, ToolbarButton } = wp.components;
 const { InspectorControls, useBlockProps, BlockControls } = wp.blockEditor;
 const { Fragment, useEffect } = wp.element;
@@ -79,6 +79,8 @@ export default function Edit({ attributes, className, setAttributes, isSelected 
 		const regex = /^https:\/\/calendar\.google\.com\/calendar\/(?:u\/\d+\/)?embed\?.*$/;
 		return regex.test(url);
 	}
+
+
 
 	return (
 		<Fragment>
@@ -157,6 +159,7 @@ export default function Edit({ attributes, className, setAttributes, isSelected 
 						width={width}
 						height={height}
 						onLoad={onLoad}
+                        title={getIframeTitle(url)}
 					/>
 				)}
 				{powered_by && isGoogleCalendar(url) && (

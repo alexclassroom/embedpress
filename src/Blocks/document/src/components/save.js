@@ -7,7 +7,7 @@ const { useBlockProps } = wp.blockEditor;
  * Internal dependencies
  */
 import { epGetPopupIcon, epGetDownloadIcon, epGetPrintIcon, epGetFullscreenIcon, epGetMinimizeIcon, epGetDrawIcon } from '../../../GlobalCoponents/icons';
-import { isFileUrl } from '../../../GlobalCoponents/helper';
+import { isFileUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 import Logo from "../../../GlobalCoponents/Logo";
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html';
 import AdTemplate from '../../../GlobalCoponents/ads-template';
@@ -23,7 +23,7 @@ const Save = ({ attributes, setAttributes }) => {
     const blockProps = useBlockProps.save();
 
     const {
-        href, mime, id, unitoption, width, height, powered_by,
+        href, mime, id, unitoption, width, height, powered_by, fileName,
         docViewer, themeMode, customColor, presentation = true, position = 'bottom',
         download = true, draw = true, toolbar, doc_rotation, clientId,
         sharePosition, contentShare, adManager, adSource, adFileUrl,
@@ -37,6 +37,8 @@ const Save = ({ attributes, setAttributes }) => {
     const contentShareClass = contentShare ? 'ep-content-share-enabled' : '';
     const sharePositionClass = sharePosition ? `ep-share-position-${sharePosition}` : '';
     const isDownloadEnabled = download ? 'enabled-file-download' : '';
+
+
 
     // Iframe Source
     let iframeSrc = `//view.officeapps.live.com/op/embed.aspx?src=${href}`;
@@ -75,7 +77,7 @@ const Save = ({ attributes, setAttributes }) => {
                         <div className='main-content-wraper'>
 
                             {mime === 'application/pdf' ? (
-                                <PDFViewer href={href} id={id} width={width} height={height} unitoption={unitoption} setFetching={false} />
+                                <PDFViewer href={href} id={id} width={width} height={height} unitoption={unitoption} setFetching={false} title={getIframeTitle(href, fileName)} />
                             ) : (
                                 <FileViewer
                                     href={href}
@@ -91,6 +93,7 @@ const Save = ({ attributes, setAttributes }) => {
                                     toolbar={toolbar}
                                     presentation={presentation}
                                     setFetching={false}
+                                    title={getIframeTitle(href, fileName)}
                                 />
                             )}
 

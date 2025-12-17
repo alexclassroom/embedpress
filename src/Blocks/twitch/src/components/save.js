@@ -1,3 +1,5 @@
+import { getIframeTitle } from '../../../GlobalCoponents/helper';
+
 const save = (props) => {
 	const {
 		iframeSrc,
@@ -22,6 +24,7 @@ const save = (props) => {
 					data-ep-iframe-frameborder="0"
 					data-ep-iframe-width="600"
 					data-ep-iframe-height="450"
+                    data-ep-iframe-title={getIframeTitle(iframeSrc)}
 					style={{ width: '600px', height: '450px', maxWidth: '100%' }}
 				/>
 			) : (
@@ -29,6 +32,7 @@ const save = (props) => {
 					src={IframeUrl} {...attrs}
 					frameBorder="0"
 					width="600"
+                    title={getIframeTitle(iframeSrc)}
 					height="450"></iframe>
 			)}
 		</figure>

@@ -18,7 +18,7 @@ import Iframe from '../../../GlobalCoponents/Iframe';
 import EmbedLoading from '../../../GlobalCoponents/embed-loading';
 import EmbedPlaceholder from '../../../GlobalCoponents/embed-placeholder';
 import EmbedControls from '../../../GlobalCoponents/embed-controls';
-import { saveSourceData, sanitizeUrl } from '../../../GlobalCoponents/helper';
+import { saveSourceData, sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html';
 import AdTemplate from '../../../GlobalCoponents/ads-template';
 import { googleFormsIcon } from "../../../GlobalCoponents/icons";
@@ -38,6 +38,8 @@ function Edit(props) {
     const [interactive, setInteractive] = useState(false);
 
     const blockProps = useBlockProps();
+
+
 
     // Reset interactive state when block is deselected
     useEffect(() => {
@@ -184,6 +186,7 @@ function Edit(props) {
                             <div className={`position-${sharePosition}-wraper gutenberg-google-forms-wraper`}>
                                 <div className='main-content-wraper'>
                                     <Iframe
+                                        title={getIframeTitle(iframeSrc)}
                                         src={sanitizeUrl(iframeSrc)}
                                         onMouseUp={hideOverlay}
                                         onLoad={onLoad}

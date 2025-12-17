@@ -422,3 +422,27 @@ export const isInstagramHashtag = (url) => {
     const instagramHashtagRegex = /^https?:\/\/(?:www\.)?instagram\.com\/explore\/tags\/([^/]+)\/?$/i;
     return instagramHashtagRegex.test(url);
 }
+
+export const getIframeTitle = (url, fileName = '') => {
+    if (fileName) return fileName;
+    if (!url) return '';
+    try {
+        if (url.indexOf('view.officeapps.live.com') !== -1) {
+            const params = new URLSearchParams(url.split('?')[1]);
+            const src = params.get('src');
+            if (src) url = src;
+        }
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+        const parts = pathname.split('/');
+        const lastPart = parts.pop() || parts.pop();
+        if (lastPart) {
+            let filename = lastPart.split('.')[0];
+            filename = decodeURIComponent(filename).replace(/[-_]/g, ' ');
+            return filename.charAt(0).toUpperCase() + filename.slice(1);
+        }
+        return urlObj.hostname;
+    } catch (e) {
+        return '';
+    }
+}

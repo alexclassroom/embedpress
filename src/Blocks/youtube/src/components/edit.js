@@ -5,7 +5,7 @@ import EmbedControls from '../../../GlobalCoponents/embed-controls';
 import EmbedLoading from '../../../GlobalCoponents/embed-loading';
 import EmbedPlaceholder from '../../../GlobalCoponents/embed-placeholder';
 import Iframe from '../../../GlobalCoponents/Iframe';
-import { sanitizeUrl } from '../../../GlobalCoponents/helper';
+import { sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 import Inspector from './inspector';
 
 /**
@@ -19,6 +19,8 @@ import { youtubeIcon } from '../../../GlobalCoponents/icons';
 export default function YouTubeEdit({ attributes, setAttributes, isSelected }) {
 	const blockProps = useBlockProps();
 	const { url: attributeUrl, iframeSrc, width, height } = attributes;
+
+
 
 	const [state, setState] = useState({
 		editingURL: false,
@@ -133,6 +135,7 @@ export default function YouTubeEdit({ attributes, setAttributes, isSelected }) {
 						frameBorder="0"
 						width={width}
 						height={height}
+                        title={getIframeTitle(iframeSrc)}
 					/>
 
 					{!interactive && (
