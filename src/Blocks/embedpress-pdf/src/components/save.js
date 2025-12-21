@@ -4,7 +4,7 @@
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html.js';
 import Logo from '../../../GlobalCoponents/Logo.js';
 import AdTemplate from '../../../GlobalCoponents/ads-template.js';
-import { sanitizeUrl } from '../../../GlobalCoponents/helper.js';
+import { sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper.js';
 
 const { applyFilters } = wp.hooks;
 
@@ -26,6 +26,7 @@ const Save = ({ attributes }) => {
 
     const {
         href,
+        fileName,
         mime,
         id,
         unitoption,
@@ -83,6 +84,8 @@ const Save = ({ attributes }) => {
         content_share_class = 'ep-content-share-enabled';
         share_position_class = 'ep-share-position-' + share_position;
     }
+
+
 
     function getParamData(href) {
         let pdf_params = '';
@@ -168,7 +171,7 @@ const Save = ({ attributes }) => {
                         <div className='main-content-wraper'>
                             {mime === 'application/pdf' && pdf_viewer_src && (
                                 <iframe
-                                    title=""
+                                    title={getIframeTitle(href, fileName)}
                                     powered_by={powered_by}
                                     style={{ height: height + 'px', width: width + unitoption, maxWidth: '100%' }}
                                     className={'embedpress-embed-document-pdf' + ' ' + id}
@@ -180,7 +183,7 @@ const Save = ({ attributes }) => {
 
                             {mime !== 'application/pdf' && (
                                 <iframe
-                                    title=""
+                                    title={getIframeTitle(url, fileName)}
                                     style={{ height: height + 'px', width: width + unitoption, maxWidth: '100%' }}
                                     src={sanitizeUrl(url)}
                                 />

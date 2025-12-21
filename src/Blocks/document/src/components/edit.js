@@ -14,7 +14,7 @@ const { applyFilters } = wp.hooks;
  */
 import Logo from '../../../GlobalCoponents/Logo';
 import EmbedLoading from '../../../GlobalCoponents/embed-loading';
-import { sanitizeUrl, saveSourceData, isFileUrl } from '../../../GlobalCoponents/helper';
+import { sanitizeUrl, saveSourceData, isFileUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 import { DocumentIcon, epGetPopupIcon, epGetDownloadIcon, epGetPrintIcon, epGetFullscreenIcon, epGetMinimizeIcon, epGetDrawIcon } from '../../../GlobalCoponents/icons';
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html';
 import AdTemplate from '../../../GlobalCoponents/ads-template';
@@ -46,6 +46,8 @@ const Edit = ({ attributes, mediaUpload, noticeOperations, isSelected, setAttrib
 	const [loadPdf, setLoadPdf] = useState(true);
 
 	const blockProps = useBlockProps();
+
+
 
 	
 	useEffect(() => {
@@ -137,7 +139,7 @@ const Edit = ({ attributes, mediaUpload, noticeOperations, isSelected, setAttrib
 				<div className={`position-${sharePosition}-wraper gutenberg-doc-wraper`}>
 					<div className='main-content-wraper'>
 						{mime === 'application/pdf' ? (
-							<PDFViewer href={href} id={id} width={width} height={height} unitoption={unitoption} setFetching={setFetching} />
+							<PDFViewer href={href} id={id} width={width} height={height} unitoption={unitoption} setFetching={setFetching} title={getIframeTitle(href, attributes.fileName)} />
 						) : (
 							<FileViewer
 								href={href}
@@ -157,6 +159,7 @@ const Edit = ({ attributes, mediaUpload, noticeOperations, isSelected, setAttrib
 								setFetching={setFetching}
 								loadPdf={loadPdf}
 								fetching={fetching}
+                                title={getIframeTitle(href, attributes.fileName)}
 							/>
 						)}
 

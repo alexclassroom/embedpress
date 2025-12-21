@@ -4,7 +4,7 @@ import { DocumentIcon, epGetPopupIcon, epGetDownloadIcon, epGetPrintIcon, epGetF
 
 const FileViewer = ({
     href, url, docViewer, width, height, unitoption, themeMode, customColor, id,
-    download, draw, toolbar, presentation, setShowOverlay, setFetching, loadPdf, fetching
+    download, draw, toolbar, presentation, setShowOverlay, setFetching, loadPdf, fetching, title
 }) => (
     <div
         className={`${docViewer === 'custom' ? 'ep-file-download-option-masked ' : ''}ep-gutenberg-file-doc ep-powered-by-enabled${download ? ' enabled-file-download' : ''}`}
@@ -13,6 +13,7 @@ const FileViewer = ({
         data-id={id}
     >
         <iframe
+            title={title}
             src={sanitizeUrl(url)}
             style={{ height: height + 'px', width: width + unitoption }}
             onLoad={() => setFetching(false)}

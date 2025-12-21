@@ -1,3 +1,5 @@
+import { getIframeTitle } from '../../../GlobalCoponents/helper';
+
 const save = (props) => {
 	const { iframeSrc, width, height, enableLazyLoad, customPlayer } = props.attributes
 
@@ -18,6 +20,7 @@ const save = (props) => {
 					data-ep-iframe-name="wistia_embed"
 					data-ep-iframe-width={width}
 					data-ep-iframe-height={height}
+                    data-ep-iframe-title={getIframeTitle(iframeSrc)}
 					style={{ width: `${width}px`, height: `${height}px`, maxWidth: '100%' }}
 				/>
 			) : (
@@ -29,6 +32,7 @@ const save = (props) => {
 					name="wistia_embed"
 					width={width}
 					height={height}
+                    title={getIframeTitle(iframeSrc)}
 				></iframe>
 			)}
 		</div>

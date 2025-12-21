@@ -24,7 +24,7 @@ const { applyFilters } = wp.hooks;
 import Iframe from '../../../GlobalCoponents/Iframe';
 import Logo from '../../../GlobalCoponents/Logo';
 import EmbedLoading from '../../../GlobalCoponents/embed-loading';
-import { saveSourceData, sanitizeUrl, shareIconsHtml } from '../../../GlobalCoponents/helper';
+import { saveSourceData, sanitizeUrl, shareIconsHtml, getIframeTitle } from '../../../GlobalCoponents/helper';
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html';
 import AdTemplate from '../../../GlobalCoponents/ads-template';
 import Inspector from "../inspector";
@@ -337,7 +337,7 @@ function Edit(props) {
 									{mime === 'application/pdf' && (
 										// <iframe title="" powered_by={powered_by} style={{ height: height + 'px', width: '100%' }} className={'embedpress-embed-document-pdf' + ' ' + id} data-emid={id} src={sanitizeUrl(pdf_viewer_src)} data-viewer-style={viewerStyle}></iframe>
 										<iframe
-											title=""
+											title={getIframeTitle(href, attributes.fileName)}
 											powered_by={powered_by}
 											style={{ height: height + 'px', width: width + unitoption, maxWidth: '100%' }}
 											className={'embedpress-embed-document-pdf' + ' ' + id}
@@ -348,7 +348,7 @@ function Edit(props) {
 									)}
 
 									{mime !== 'application/pdf' && (
-										<Iframe title="" onMouseUponMouseUp={hideOverlay} style={{ height: height + 'px', width: width, display: fetching || !loadPdf ? 'none' : '' }} onLoad={onLoad} src={sanitizeUrl(url)} />
+										<Iframe title={getIframeTitle(url, attributes.fileName)} onMouseUponMouseUp={hideOverlay} style={{ height: height + 'px', width: width, display: fetching || !loadPdf ? 'none' : '' }} onLoad={onLoad} src={sanitizeUrl(url)} />
 									)}
 
 									{contentShare && <SocialShareHtml attributes={attributes} />}

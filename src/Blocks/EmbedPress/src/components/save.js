@@ -12,7 +12,7 @@ import DynamicStyles from "./dynamic-styles.js";
 const { applyFilters } = wp.hooks;
 
 import "../style.scss"
-import { shareIconsHtml } from "../../../GlobalCoponents/helper.js";
+import { shareIconsHtml, getIframeTitle } from "../../../GlobalCoponents/helper.js";
 
 /**
  * Save component for EmbedPress block
