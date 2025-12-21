@@ -273,7 +273,9 @@ class EmbedPressBlockRenderer
         // Handle flip-book viewer style
         if (isset($attributes['viewerStyle']) && $attributes['viewerStyle'] === 'flip-book') {
             $src = urlencode($href) . self::generate_pdf_params($attributes);
-            $embed_code = '<iframe title="' . esc_attr(Helper::get_file_title($href)) . '" class="embedpress-embed-document-pdf ' . esc_attr($id) . '" style="' . esc_attr($legacy_config['dimension']) . '; max-width:100%; display: inline-block" src="' . esc_url(EMBEDPRESS_URL_ASSETS . 'pdf-flip-book/viewer.html?file=' . $src) . '" frameborder="0" oncontextmenu="return false;"></iframe> ';
+            $renderer = Helper::get_flipbook_renderer();
+            $src_url = $renderer . ((strpos($renderer, '?') == false) ? '?' : '&') . 'file=' . $src;
+            $embed_code = '<iframe title="' . esc_attr(Helper::get_file_title($href)) . '" class="embedpress-embed-document-pdf ' . esc_attr($id) . '" style="' . esc_attr($legacy_config['dimension']) . '; max-width:100%; display: inline-block" src="' . esc_url($src_url) . '" frameborder="0" oncontextmenu="return false;"></iframe> ';
         }
 
         // Add powered by if enabled
