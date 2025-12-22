@@ -870,7 +870,7 @@ class Feature_Enhancer
 
 		if (
 			isset($embed->provider_name)
-			&& strtoupper($embed->provider_name) === 'WISTIA, INC.'
+			&& (strtoupper($embed->provider_name) === 'WISTIA, INC.' || strtoupper($embed->provider_name) === 'WISTIA')
 			&& isset($embed->embed)
 			&& preg_match('/src=\"(.+?)\"/', $embed->embed, $match)
 		) {

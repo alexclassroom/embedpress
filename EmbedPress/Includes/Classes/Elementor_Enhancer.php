@@ -226,7 +226,7 @@ class Elementor_Enhancer {
 	}
 
 	public static function wistia( $embed, $setting ) {
-		if ( ! isset( $embed->provider_name ) || strtoupper( $embed->provider_name ) !== 'WISTIA, INC.' || ! isset( $embed->embed ) || $setting['embedpress_pro_embeded_source'] !== 'wistia' ) {
+		if ( ! isset( $embed->provider_name ) || (strtoupper( $embed->provider_name ) !== 'WISTIA, INC.' && strtoupper( $embed->provider_name ) !== 'WISTIA') || ! isset( $embed->embed ) || $setting['embedpress_pro_embeded_source'] !== 'wistia' ) {
 			return $embed;
 		}
 		preg_match( '/src=\"(.+?)\"/', $embed->embed, $match );
