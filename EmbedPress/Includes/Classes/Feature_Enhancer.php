@@ -20,7 +20,7 @@ class Feature_Enhancer
 	{
 		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_youtube'], 90);
 		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_vimeo'], 90);
-		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_wistia'], 90);
+		// add_filter('embedpress:onAfterEmbed', [$this, 'enhance_wistia'], 90);
 		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_twitch'], 90);
 		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_dailymotion'], 90);
 		add_filter('embedpress:onAfterEmbed', [$this, 'enhance_soundcloud'], 90);
@@ -529,7 +529,7 @@ class Feature_Enhancer
 	{
 		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_youtube'], 90);
 		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_vimeo'], 90);
-		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_wistia'], 90);
+		// remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_wistia'], 90);
 		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_twitch'], 90);
 		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_dailymotion'], 90);
 		remove_filter('embedpress:onAfterEmbed', [$this, 'enhance_soundcloud'], 90);
@@ -992,7 +992,7 @@ class Feature_Enhancer
 			preg_match('/ose-uid-([a-z0-9]*)/', $embed->embed, $matches);
 			$uid = $matches[1];
 
-			$html = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$uid} responsive\">";
+			$html = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$uid} responsive we\">";
 			$html .= '<script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>';
 			$html .= "<script>window.pp_embed_wistia_labels = {$labels};</script>\n";
 			$html .= "<script>window._wq = window._wq || []; _wq.push({\"{$shortVideoId}\": {$embedOptions}});</script>\n";

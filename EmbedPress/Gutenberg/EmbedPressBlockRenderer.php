@@ -31,6 +31,8 @@ class EmbedPressBlockRenderer
         'photos.google.com',
         'instagram.com',
         'opensea.io',
+        'wistia.com',
+        'wistia.net',
     ];
 
     /**

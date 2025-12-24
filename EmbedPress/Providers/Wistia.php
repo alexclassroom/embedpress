@@ -9,29 +9,20 @@ use Embera\Url;
 (defined('ABSPATH') && defined('EMBEDPRESS_IS_LOADED')) or die("No direct script access allowed.");
 
 /**
- * Entity responsible to support Wistia embeds using API.
+ * Wistia provider for EmbedPress.
  *
  * @package     EmbedPress
  * @subpackage  EmbedPress/Providers
- * @author      EmbedPress <help@embedpress.com>
- * @copyright   Copyright (C) 2023 WPDeveloper. All rights reserved.
+ * @author      EmbedPress
  * @license     GPLv3 or later
  * @since       1.0.0
  */
 class Wistia extends ProviderAdapter implements ProviderInterface
 {
-    /** inline {@inheritdoc} */
-    protected $shouldSendRequest = false;
-
-    /** inline {@inheritdoc} */
-    protected $endpoint = 'https://fast.wistia.com/oembed.json';
-
-    /** inline {@inheritdoc} */
     protected static $hosts = [
         '*.wistia.com',
         'wistia.com'
     ];
-    
 
     /** inline {@inheritdoc} */
     protected $allowedParams = [
@@ -56,7 +47,8 @@ class Wistia extends ProviderAdapter implements ProviderInterface
     /** inline {@inheritdoc} */
     protected $httpsSupport = true;
 
-    public function getAllowedParams(){
+    public function getAllowedParams()
+    {
         return $this->allowedParams;
     }
 
@@ -70,46 +62,24 @@ class Wistia extends ProviderAdapter implements ProviderInterface
     }
 
     /**
-     * Validate if the URL is a valid Wistia URL
+     * Validates if the URL belongs to Wistia.
      *
      * @param Url $url
      * @return bool
      */
     public function validateUrl(Url $url)
     {
+        $urlString = (string) $url;
+
+
         return (bool) (
-            preg_match('~wistia\.com/embed/(iframe|playlists)/([^/]+)~i', (string) $url) ||
-            preg_match('~wistia\.com/medias/([^/]+)~i', (string) $url)
+            preg_match('~(?:\w+\.)?wistia\.com/embed/(iframe|playlists)/([^/]+)~i', $urlString) ||
+            preg_match('~(?:\w+\.)?wistia\.com/medias/([^/]+)~i', $urlString)
         );
     }
 
-    /**
-     * Normalize the URL
-     *
-     * @param Url $url
-     * @return Url
-     */
-    public function normalizeUrl(Url $url)
+    public function getVideoIDFromURL($url)
     {
-        $url->convertToHttps();
-        $url->removeQueryString();
-        $url->removeLastSlash();
-
-        return $url;
-    }
-
-    /**
-     * Get the Video ID from the URL
-     *
-     * @param string $url
-     * @return string|false
-     */
-    public function getVideoIDFromURL($url = null)
-    {
-        if (empty($url)) {
-            $url = $this->getUrl();
-        }
-
         // https://fast.wistia.com/embed/medias/xf1edjzn92.jsonp
         // https://ostraining-1.wistia.com/medias/xf1edjzn92
         preg_match('#\/medias\\\?\/([a-z0-9]+)\.?#i', $url, $matches);
@@ -122,159 +92,50 @@ class Wistia extends ProviderAdapter implements ProviderInterface
         return $id;
     }
 
-    /**
-     * Get static response using Wistia oEmbed API
-     *
-     * @return array
-     */
-    public function fakeDynamicResponse()
+    public function enhance_wistia()
     {
-        $videoId = $this->getVideoIDFromURL();
 
-        if (!$videoId) {
-            return [];
-        }
+        $options = $this->getParams();
 
-        // Build the oEmbed API URL
-        $apiUrl = $this->endpoint . '?url=' . urlencode($this->getUrl());
-
-        // Add maxwidth and maxheight if available
-        $params = $this->getParams();
-
-        // Temporary debug - remove after testing
-        error_log('Wistia Params: ' . print_r($params, true));
-        error_log('Wistia Config: ' . print_r($this->config, true));
-        if (!empty($params['maxwidth'])) {
-            $apiUrl .= '&maxwidth=' . intval($params['maxwidth']);
-        }
-        if (!empty($params['maxheight'])) {
-            $apiUrl .= '&maxheight=' . intval($params['maxheight']);
-        }
-
-
-        // Check transient cache
-        $transient_key = 'ep_wistia_' . md5($apiUrl);
-        $cached_data = get_transient($transient_key);
-
-        if ($cached_data !== false) {
-            // Apply enhancements to cached data
-            return $this->modifyResponse($cached_data);
-        }
-
-        // Fetch data from Wistia oEmbed API
-        $response = wp_remote_get($apiUrl, ['timeout' => 30]);
-
-        if (is_wp_error($response)) {
-            return $this->getFallbackResponse($videoId, $params);
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-
-        if (empty($data) || !isset($data['html'])) {
-            return $this->getFallbackResponse($videoId, $params);
-        }
-
-        // Prepare the response
-        $result = [
-            'type' => $data['type'] ?? 'video',
-            'provider_name' => $data['provider_name'] ?? 'Wistia',
-            'provider_url' => $data['provider_url'] ?? 'https://wistia.com',
-            'title' => $data['title'] ?? '',
-            'html' => $data['html'] ?? '',
-            'width' => $data['width'] ?? 600,
-            'height' => $data['height'] ?? 450,
-        ];
-
-        // Cache for 1 hour (cache the raw response, not the modified one)
-        set_transient($transient_key, $result, HOUR_IN_SECONDS);
-
-        // Apply enhancements
-        return $this->modifyResponse($result);
-    }
-
-    /**
-     * Modify the response to apply Wistia-specific enhancements
-     * This handles all customizations from Gutenberg, Elementor, and Shortcode
-     *
-     * @param array $response
-     * @return array
-     */
-    public function modifyResponse(array $response = [])
-    {
-        if (empty($response['html'])) {
-            return $response;
-        }
-
-        $params = $this->getParams();
-        
-        $videoId = $this->getVideoIDFromURL();
-
-        if (!$videoId) {
-            return $response;
-        }
-
-        // Get plugin settings
-        $options = $this->getWistiaSettings();
-
-        // Build embed options
         $embedOptions = new \stdClass;
         $embedOptions->videoFoam = false;
 
-        // Fullscreen button
-        if (isset($params['wfullscreen'])) {
-            $embedOptions->fullscreenButton = (bool) $params['wfullscreen'];
-        } elseif (isset($options['display_fullscreen_button'])) {
-            $embedOptions->fullscreenButton = (bool) $options['display_fullscreen_button'];
-        }
+        // Fullscreen
+        $embedOptions->fullscreenButton =
+            isset($options['wfullscreen']) && (bool) $options['wfullscreen'];
 
         // Playbar
-        if (isset($params['playbar'])) {
-            $embedOptions->playbar = (bool) $params['playbar'];
-        } elseif (isset($options['display_playbar'])) {
-            $embedOptions->playbar = (bool) $options['display_playbar'];
-        }
+        $embedOptions->playbar =
+            isset($options['playbar']) && (bool) $options['playbar'];
 
         // Small play button
-        if (isset($params['smallplaybutton'])) {
-            $embedOptions->smallPlayButton = (bool) $params['smallplaybutton'];
-        } elseif (isset($options['small_play_button'])) {
-            $embedOptions->smallPlayButton = (bool) $options['small_play_button'];
-        }
+        $embedOptions->smallPlayButton =
+            isset($options['smallplaybutton']) && (bool) $options['smallplaybutton'];
 
         // Autoplay
-        if (isset($params['wautoplay'])) {
-            $embedOptions->autoPlay = (bool) $params['wautoplay'];
-        } elseif (isset($options['autoplay'])) {
-            $embedOptions->autoPlay = (bool) $options['autoplay'];
-        }
+        $embedOptions->autoPlay =
+            isset($options['wautoplay']) && (bool) $options['wautoplay'];
 
         // Start time
-        if (isset($params['wstarttime']) && !empty($params['wstarttime'])) {
-            $embedOptions->time = (int) $params['wstarttime'];
-        } elseif (!empty($options['start_time'])) {
-            $embedOptions->time = (int) $options['start_time'];
+        if (!empty($options['wstarttime'])) {
+            $embedOptions->time = (int) $options['wstarttime'];
         }
 
-        // Player color/scheme
-        if (isset($params['scheme']) && !empty($params['scheme'])) {
-            $embedOptions->playerColor = $params['scheme'];
-        } elseif (isset($options['player_color']) && !empty($options['player_color'])) {
-            $embedOptions->playerColor = $options['player_color'];
+        // Player color
+        if (!empty($options['scheme'])) {
+            $embedOptions->playerColor = $options['scheme'];
         }
 
-        // Build plugins
-        $pluginsBaseURL = plugins_url('assets/js/wistia/min', dirname(__DIR__) . '/embedpress-Wistia.php');
+        // Plugins
+        $pluginsBaseURL = plugins_url(
+            'assets/js/wistia/min',
+            dirname(__DIR__) . '/embedpress-Wistia.php'
+        );
+
         $pluginList = [];
 
-        // Resumable plugin
-        $isResumableEnabled = false;
-        if (isset($params['resumable'])) {
-            $isResumableEnabled = (bool) $params['resumable'];
-        } elseif (isset($options['plugin_resumable'])) {
-            $isResumableEnabled = (bool) $options['plugin_resumable'];
-        }
-
+        // Resumable
+        $isResumableEnabled = !empty($options['resumable']);
         if ($isResumableEnabled) {
             $pluginList['resumable'] = [
                 'src' => $pluginsBaseURL . '/resumable.min.js',
@@ -282,151 +143,188 @@ class Wistia extends ProviderAdapter implements ProviderInterface
             ];
         }
 
-        // Fix for autoplay and resumable working together
-        if (isset($embedOptions->autoPlay) && $embedOptions->autoPlay && $isResumableEnabled) {
+        // Autoplay + resumable fix
+        if ($embedOptions->autoPlay && $isResumableEnabled) {
             $pluginList['fixautoplayresumable'] = [
                 'src' => $pluginsBaseURL . '/fixautoplayresumable.min.js'
             ];
         }
 
-        // Focus plugin
-        $isFocusEnabled = false;
-        if (isset($params['wistiafocus'])) {
-            $isFocusEnabled = (bool) $params['wistiafocus'];
-        } elseif (isset($options['plugin_focus'])) {
-            $isFocusEnabled = (bool) $options['plugin_focus'];
-        }
-
-        if ($isFocusEnabled) {
+        // Focus
+        if (isset($options['wistiafocus'])) {
             $pluginList['dimthelights'] = [
                 'src' => $pluginsBaseURL . '/dimthelights.min.js',
-                'autoDim' => $isFocusEnabled
+                'autoDim' => (bool) $options['wistiafocus']
             ];
-            $embedOptions->focus = $isFocusEnabled;
+            $embedOptions->focus = (bool) $options['wistiafocus'];
         }
 
-        // Rewind plugin
-        $isRewindEnabled = false;
-        if (isset($params['rewind'])) {
-            $isRewindEnabled = (bool) $params['rewind'];
-        } elseif (isset($options['plugin_rewind'])) {
-            $isRewindEnabled = (bool) $options['plugin_rewind'];
-        }
+        // Rewind
+        if (!empty($options['rewind'])) {
+            $embedOptions->rewindTime = 10;
 
-        if ($isRewindEnabled) {
-            $embedOptions->rewindTime = isset($options['plugin_rewind_time']) ? (int) $options['plugin_rewind_time'] : 10;
             $pluginList['rewind'] = [
                 'src' => $pluginsBaseURL . '/rewind.min.js'
             ];
         }
 
         $embedOptions->plugin = $pluginList;
-        $embedOptionsJson = json_encode($embedOptions);
+        $embedOptions = json_encode($embedOptions);
 
-        // Get short video ID (first 3 characters)
+        // Video ID
+        $videoId = $this->getVideoIDFromURL($options['url']);
         $shortVideoId = substr($videoId, 0, 3);
 
-        // Build the custom HTML
         $class = [
             'wistia_embed',
             'wistia_async_' . $videoId
         ];
 
-        $width = $response['width'] ?? 600;
-        $height = $response['height'] ?? 450;
+        $attribs = [
+            sprintf('id="wistia_%s"', $videoId),
+            sprintf('class="%s"', implode(' ', $class)),
+            sprintf('style="width:%spx; height:%spx;"', $options['width'], $options['height'])
+        ];
+
+
+        $html  = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$videoId} responsive we\">";
+        $html .= '<script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>';
+        $html .= "<script>window._wq = window._wq || []; _wq.push({\"{$shortVideoId}\": {$embedOptions}});</script>";
+        $html .= '<div ' . implode(' ', $attribs) . '></div>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    public function fakeDynamicResponse($embed, $options = [])
+    {
+
+
+        $embedOptions = new \stdClass;
+        $embedOptions->videoFoam = false;
+
+        // Fullscreen
+        $embedOptions->fullscreenButton =
+            isset($options['wfullscreen']) && (bool) $options['wfullscreen'];
+
+        // Playbar
+        $embedOptions->playbar =
+            isset($options['playbar']) && (bool) $options['playbar'];
+
+        // Small play button
+        $embedOptions->smallPlayButton =
+            isset($options['smallplaybutton']) && (bool) $options['smallplaybutton'];
+
+        // Autoplay
+        $embedOptions->autoPlay =
+            isset($options['wautoplay']) && (bool) $options['wautoplay'];
+
+        // Start time
+        if (!empty($options['wstarttime'])) {
+            $embedOptions->time = (int) $options['wstarttime'];
+        }
+
+        // Player color
+        if (!empty($options['scheme'])) {
+            $embedOptions->playerColor = $options['scheme'];
+        }
+
+        // Plugins
+        $pluginsBaseURL = plugins_url(
+            'assets/js/wistia/min',
+            dirname(__DIR__) . '/embedpress-Wistia.php'
+        );
+
+        $pluginList = [];
+
+        // Resumable
+        $isResumableEnabled = !empty($options['resumable']);
+        if ($isResumableEnabled) {
+            $pluginList['resumable'] = [
+                'src' => $pluginsBaseURL . '/resumable.min.js',
+                'async' => false
+            ];
+        }
+
+        // Autoplay + resumable fix
+        if ($embedOptions->autoPlay && $isResumableEnabled) {
+            $pluginList['fixautoplayresumable'] = [
+                'src' => $pluginsBaseURL . '/fixautoplayresumable.min.js'
+            ];
+        }
+
+        // Focus
+        if (isset($options['wistiafocus'])) {
+            $pluginList['dimthelights'] = [
+                'src' => $pluginsBaseURL . '/dimthelights.min.js',
+                'autoDim' => (bool) $options['wistiafocus']
+            ];
+            $embedOptions->focus = (bool) $options['wistiafocus'];
+        }
+
+        // Rewind
+        if (!empty($options['rewind'])) {
+            $embedOptions->rewindTime = 10;
+
+            $pluginList['rewind'] = [
+                'src' => $pluginsBaseURL . '/rewind.min.js'
+            ];
+        }
+
+        $embedOptions->plugin = $pluginList;
+        $embedOptions = json_encode($embedOptions);
+
+        // Video ID
+        $videoId = $this->getVideoIDFromURL($options['url']);
+        $shortVideoId = substr($videoId, 0, 3);
+
+        $class = [
+            'wistia_embed',
+            'wistia_async_' . $videoId
+        ];
 
         $attribs = [
             sprintf('id="wistia_%s"', $videoId),
-            sprintf('class="%s"', join(' ', $class)),
-            sprintf('style="width:%spx; height:%spx;"', $width, $height)
+            sprintf('class="%s"', implode(' ', $class)),
+            sprintf('style="width:%spx; height:%spx;"', $options['width'], $options['height'])
         ];
 
-        // Labels for resumable plugin
-        $labels = [
-            'watch_from_beginning' => __('Watch from the beginning', 'embedpress'),
-            'skip_to_where_you_left_off' => __('Skip to where you left off', 'embedpress'),
-            'you_have_watched_it_before' => __(
-                'It looks like you\'ve watched<br />part of this video before!',
-                'embedpress'
-            ),
-        ];
-        $labelsJson = json_encode($labels);
 
-        // Generate unique ID for wrapper
-        $uid = substr(md5($this->getUrl() . time()), 0, 10);
-
-        // Build the final HTML
-        $html = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$uid} responsive\">";
+        $html  = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$videoId} responsive we\">";
         $html .= '<script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>';
-        $html .= "<script>window.pp_embed_wistia_labels = {$labelsJson};</script>\n";
-        $html .= "<script>window._wq = window._wq || []; _wq.push({\"{$shortVideoId}\": {$embedOptionsJson}});</script>\n";
-        $html .= '<div ' . join(' ', $attribs) . "></div>\n";
+        $html .= "<script>window._wq = window._wq || []; _wq.push({\"{$shortVideoId}\": {$embedOptions}});</script>";
+        $html .= '<div ' . implode(' ', $attribs) . '></div>';
         $html .= '</div>';
 
-        $response['html'] = $html;
-
-        return $response;
+        return $html;
     }
 
+
     /**
-     * Get Wistia settings from WordPress options
+     * Generates a fake oEmbed response.
      *
      * @return array
      */
-    protected function getWistiaSettings()
+    public function fakeResponse()
     {
-        $schema = [
-            'autoplay' => false,
-            'display_fullscreen_button' => true,
-            'display_playbar' => true,
-            'small_play_button' => true,
-            'start_time' => '',
-            'player_color' => '',
-            'plugin_resumable' => false,
-            'plugin_focus' => false,
-            'plugin_rewind' => false,
-            'plugin_rewind_time' => 10,
-        ];
-
-        $options = get_option(EMBEDPRESS_PLG_NAME . ':wistia', []);
-
-        return wp_parse_args($options, $schema);
-    }
-
-    /**
-     * Get fallback response when API fails
-     *
-     * @param string $videoId
-     * @param array $params
-     * @return array
-     */
-    protected function getFallbackResponse($videoId, $params)
-    {
-        $width = !empty($params['maxwidth']) ? intval($params['maxwidth']) : 600;
-        $height = !empty($params['maxheight']) ? intval($params['maxheight']) : 450;
-
-        // Create a basic iframe embed as fallback
-        $embedUrl = 'https://fast.wistia.net/embed/iframe/' . $videoId;
-
-        $attr = [];
-        $attr[] = 'src="' . esc_url($embedUrl) . '"';
-        $attr[] = 'width="' . esc_attr($width) . '"';
-        $attr[] = 'height="' . esc_attr($height) . '"';
-        $attr[] = 'frameborder="0"';
-        $attr[] = 'scrolling="no"';
-        $attr[] = 'class="wistia_embed"';
-        $attr[] = 'name="wistia_embed"';
-        $attr[] = 'allowtransparency="true"';
-        $attr[] = 'allowfullscreen';
 
         return [
-            'type' => 'video',
+            'type'          => 'rich',
             'provider_name' => 'Wistia',
-            'provider_url' => 'https://wistia.com',
-            'title' => '',
-            'html' => '<iframe ' . implode(' ', $attr) . '></iframe>',
-            'width' => $width,
-            'height' => $height,
+            'provider_url'  => 'https://wistia.com',
+            'title'         => 'Wistia',
+            'html'          => $this->enhance_wistia(),
         ];
+    }
+
+    /**
+     * Fallback for modifyResponse, returns fakeResponse.
+     *
+     * @param array $response
+     * @return array
+     */
+    public function modifyResponse(array $response = [])
+    {
+        return $this->fakeResponse();
     }
 }
