@@ -180,12 +180,14 @@ class Wistia extends ProviderAdapter implements ProviderInterface
             'wistia_async_' . $videoId
         ];
 
+        $width  = $options['width']  ?? 640;
+        $height = $options['height'] ?? 360;
+
         $attribs = [
             sprintf('id="wistia_%s"', $videoId),
             sprintf('class="%s"', implode(' ', $class)),
-            sprintf('style="width:%spx; height:%spx;"', $options['width'], $options['height'])
+            sprintf('style="width:%spx; height:%spx;"', $width, $height)
         ];
-
 
         $html  = "<div class=\"embedpress-wrapper ose-wistia ose-uid-{$videoId} responsive we\">";
         $html .= '<script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>';
