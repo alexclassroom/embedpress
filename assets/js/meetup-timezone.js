@@ -46,8 +46,23 @@
         };
 
         let formatted = format;
-        for (const [key, value] of Object.entries(replacements)) {
-            formatted = formatted.replace(new RegExp(key, 'g'), value);
+
+        // Process replacements in a specific order to avoid conflicts
+        // Process longer patterns first, then shorter ones
+        const sortedKeys = Object.keys(replacements).sort((a, b) => b.length - a.length);
+
+        for (const key of sortedKeys) {
+            const value = replacements[key];
+            // Use a placeholder to avoid replacing already-replaced values
+            const placeholder = `__PLACEHOLDER_${key}__`;
+            formatted = formatted.split(key).join(placeholder);
+        }
+
+        // Replace all placeholders with actual values
+        for (const key of sortedKeys) {
+            const value = replacements[key];
+            const placeholder = `__PLACEHOLDER_${key}__`;
+            formatted = formatted.split(placeholder).join(value);
         }
 
         return formatted;
@@ -85,6 +100,11 @@
             const isDateElement = element.classList.contains('ep-event-date');
             const isTimeElement = element.classList.contains('ep-event-end-time');
 
+            // Get timezone abbreviation
+            const timezoneAbbr = date.toLocaleTimeString('en-US', {
+                timeZoneName: 'short'
+            }).split(' ').pop();
+
             if (isDateElement) {
                 // Format date and time
                 const dateFormat = element.getAttribute('data-date-format') || 'F j, Y';
@@ -94,13 +114,13 @@
                 const formattedDate = formatDate(date, dateFormat);
                 const formattedTime = formatTime(date, timeFormat);
 
-                const newText = formattedDate + ', ' + formattedTime;
+                const newText = formattedDate + ', ' + formattedTime + ' ' + timezoneAbbr;
                 console.log('Formatted date:', newText);
                 element.textContent = newText;
             } else if (isTimeElement) {
                 // Format time only (for end time)
                 const timeFormat = element.getAttribute('data-time-format') || 'g:i A';
-                element.textContent = formatTime(date, timeFormat);
+                element.textContent = formatTime(date, timeFormat) + ' ' + timezoneAbbr;
             }
         });
     }
