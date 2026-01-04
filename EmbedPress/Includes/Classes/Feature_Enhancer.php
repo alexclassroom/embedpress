@@ -255,7 +255,7 @@ class Feature_Enhancer
 			$embedOptions->time = isset($attributes['wstarttime']) ? $attributes['wstarttime'] : '';
 		}
 
-		$embedOptions = apply_filters('embedpress_wistia_block_attributes', $embedOptions, $attributes);
+			$embedOptions = apply_filters('embedpress_wistia_block_attributes', $embedOptions, $attributes);
 
 		$pluginList = [];
 
