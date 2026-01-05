@@ -47,22 +47,21 @@
 
         let formatted = format;
 
-        // Process replacements in a specific order to avoid conflicts
-        // Process longer patterns first, then shorter ones
-        const sortedKeys = Object.keys(replacements).sort((a, b) => b.length - a.length);
+        // Use a unique placeholder pattern that won't conflict with date format characters
+        // Using Unicode characters that are unlikely to appear in format strings
+        const placeholderPrefix = '\u{1F4C5}'; // Calendar emoji as unique marker
+        const placeholders = {};
 
-        for (const key of sortedKeys) {
-            const value = replacements[key];
-            // Use a placeholder to avoid replacing already-replaced values
-            const placeholder = `__PLACEHOLDER_${key}__`;
+        // First pass: replace format characters with unique placeholders
+        for (const key in replacements) {
+            const placeholder = placeholderPrefix + key + placeholderPrefix;
+            placeholders[placeholder] = replacements[key];
             formatted = formatted.split(key).join(placeholder);
         }
 
-        // Replace all placeholders with actual values
-        for (const key of sortedKeys) {
-            const value = replacements[key];
-            const placeholder = `__PLACEHOLDER_${key}__`;
-            formatted = formatted.split(placeholder).join(value);
+        // Second pass: replace placeholders with actual values
+        for (const placeholder in placeholders) {
+            formatted = formatted.split(placeholder).join(placeholders[placeholder]);
         }
 
         return formatted;
