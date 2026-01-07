@@ -1613,7 +1613,13 @@ class Helper
 
 	public static function getBooleanParam($param, $default = false)
 	{
-		return isset($param) && is_string($param) && ($param == 'true' || $param == 'yes') ? 'true' : ($default ? 'true' : 'false');
+		if (in_array($param, [true, 'true', 'yes', 1, '1'], true)) {
+			return true;
+		}
+		if (in_array($param, [false, 'false', 'no', 0, '0'], true)) {
+			return false;
+		}
+		return (bool) $default;
 	}
 
 	public static function has_allowed_roles($allowed_roles = [])

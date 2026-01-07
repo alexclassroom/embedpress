@@ -615,6 +615,14 @@ const attributes = {
         type: 'number',
         default: 60
     },
+    showTitle: {
+        type: 'boolean',
+        default: true
+    },
+    photos_link: {
+        type: 'boolean',
+        default: true
+    },
 
     // NFT/OpenSea Attributes
     limit: {
