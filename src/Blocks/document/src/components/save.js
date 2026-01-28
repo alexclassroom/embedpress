@@ -11,6 +11,7 @@ import { isFileUrl, getIframeTitle } from '../../../GlobalCoponents/helper';
 import Logo from "../../../GlobalCoponents/Logo";
 import SocialShareHtml from '../../../GlobalCoponents/social-share-html';
 import AdTemplate from '../../../GlobalCoponents/ads-template';
+import md5 from "md5";
 const { applyFilters } =  wp.hooks;
 import PDFViewer from "./PDFViwer";
 import FileViewer from "./FileViewer";
@@ -64,16 +65,18 @@ const Save = ({ attributes, setAttributes }) => {
         return `//view.officeapps.live.com/op/embed.aspx?src=${href}`;
     };
 
+    // Generate client ID hash for content protection
+    const _md5ClientId = md5(clientId || '');
 
-    
+
 
     return (
         <div {...blockProps}>
+            <div id={`ep-gutenberg-content-${_md5ClientId}`} className="ep-gutenberg-content">
+                <div className={`embedpress-document-embed ep-doc-${id}`} style={{ height, width }} data-embed-type="Document">
 
-            <div className={`embedpress-document-embed ep-doc-${id}`} style={{ height, width }} data-embed-type="Document">
-
-                <div className="ep-embed-content-wraper">
-                    <div className={`position-${sharePosition}-wraper gutenberg-doc-wraper`}>
+                    <div className="ep-embed-content-wraper">
+                        <div className={`position-${sharePosition}-wraper gutenberg-doc-wraper`}>
                         <div className='main-content-wraper'>
 
                             {mime === 'application/pdf' ? (
@@ -115,6 +118,7 @@ const Save = ({ attributes, setAttributes }) => {
                             <AdTemplate attributes={attributes} setAttributes={setAttributes} deleteIcon progressBar inEditor />
                         )
                     }
+                    </div>
                 </div>
             </div>
 

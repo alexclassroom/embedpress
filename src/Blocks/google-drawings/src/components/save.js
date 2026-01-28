@@ -5,6 +5,7 @@ import SocialShareHtml from '../../../GlobalCoponents/social-share-html.js';
 import Logo from '../../../GlobalCoponents/Logo.js';
 import AdTemplate from '../../../GlobalCoponents/ads-template.js';
 import { sanitizeUrl } from '../../../GlobalCoponents/helper.js';
+import md5 from "md5";
 
 const { applyFilters } =  wp.hooks;
 
@@ -59,11 +60,15 @@ const Save = ({ attributes }) => {
         share_position_class = 'ep-share-position-' + share_position;
     }
 
+    // Generate client ID hash for content protection
+    const _md5ClientId = md5(clientId || '');
+
     return (
         <div {...blockProps}>
-            <div className={'embedpress-document-embed ep-google-drawings-' + id + ' ' + content_share_class + ' ' + share_position_class + ' ' + width_class} id={`ep-google-drawings-${clientId}`} data-source-id={'source-' + clientId} data-embed-type="Google Drawings">
-                <div className="ep-embed-content-wraper">
-                    <div className={`position-${sharePosition}-wraper gutenberg-google-drawings-wraper`}>
+            <div id={`ep-gutenberg-content-${_md5ClientId}`} className="ep-gutenberg-content">
+                <div className={'embedpress-document-embed ep-google-drawings-' + id + ' ' + content_share_class + ' ' + share_position_class + ' ' + width_class} id={`ep-google-drawings-${clientId}`} data-source-id={'source-' + clientId} data-embed-type="Google Drawings">
+                    <div className="ep-embed-content-wraper">
+                        <div className={`position-${sharePosition}-wraper gutenberg-google-drawings-wraper`}>
                         <div className='main-content-wraper'>
                             <img
                                 src={sanitizeUrl(iframeSrc)}
@@ -85,6 +90,7 @@ const Save = ({ attributes }) => {
                             inEditor={false}
                         />
                     )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@ import SocialShareHtml from '../../../GlobalCoponents/social-share-html.js';
 import Logo from '../../../GlobalCoponents/Logo.js';
 import AdTemplate from '../../../GlobalCoponents/ads-template.js';
 import { sanitizeUrl, getIframeTitle } from '../../../GlobalCoponents/helper.js';
+import md5 from "md5";
 
 const { applyFilters } = wp.hooks;
 
@@ -161,13 +162,15 @@ const Save = ({ attributes }) => {
 
     const customLogoTemp = applyFilters('embedpress.customLogoComponent', '', attributes);
 
-
+    // Generate client ID hash for content protection
+    const _md5ClientId = md5(clientId || '');
 
     return (
         <div {...blockProps}>
-            <div className={'embedpress-document-embed ep-doc-' + id + ' ' + content_share_class + ' ' + share_position_class + ' ' + width_class} style={{ width: width + unitoption, height: height + 'px', maxWidth: '100%' }} id={`ep-doc-${clientId}`} data-source-id={'source-' + clientId} data-embed-type="PDF">
-                <div className="ep-embed-content-wraper">
-                    <div className={`position-${sharePosition}-wraper gutenberg-pdf-wraper`}>
+            <div id={`ep-gutenberg-content-${_md5ClientId}`} className="ep-gutenberg-content">
+                <div className={'embedpress-document-embed ep-doc-' + id + ' ' + content_share_class + ' ' + share_position_class + ' ' + width_class} style={{ width: width + unitoption, height: height + 'px', maxWidth: '100%' }} id={`ep-doc-${clientId}`} data-source-id={'source-' + clientId} data-embed-type="PDF">
+                    <div className="ep-embed-content-wraper">
+                        <div className={`position-${sharePosition}-wraper gutenberg-pdf-wraper`}>
                         <div className='main-content-wraper'>
                             {mime === 'application/pdf' && pdf_viewer_src && (
                                 <iframe
@@ -209,6 +212,7 @@ const Save = ({ attributes }) => {
                         />
                     )}
 
+                    </div>
                 </div>
 
 

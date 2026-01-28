@@ -375,7 +375,9 @@ class EmbedPressBlockRenderer
 
         echo '<div class="ep-embed-content-wraper">';
         if ($attributes['protectionType'] == 'password') {
+            echo '<div id="ep-gutenberg-content-' . esc_attr($client_id) . '" class="ep-gutenberg-content">';
             do_action('embedpress/display_password_form', $client_id, $embed, $styling['pass_hash_key'], $attributes);
+            echo '</div>';
         } else {
             do_action('embedpress/content_protection_content', $client_id, $attributes['protectionMessage'], $attributes['userRole']);
         }
@@ -1157,7 +1159,9 @@ class EmbedPressBlockRenderer
         }
 
         if ($protection_data['protection_type'] === 'password') {
+            echo '<div id="ep-gutenberg-content-' . esc_attr($protection_data['client_id']) . '" class="ep-gutenberg-content">';
             do_action('embedpress/display_password_form', $protection_data['client_id'], $embed, $styling['pass_hash_key'], $attributes);
+            echo '</div>';
         } else {
             do_action('embedpress/content_protection_content', $protection_data['client_id'], $protection_data['protection_message'], $protection_data['user_role']);
         }

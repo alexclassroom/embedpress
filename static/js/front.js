@@ -379,7 +379,17 @@ let epGlobals = {};
                     jQuery(that).closest('.password-form-container').find('.error-message').removeClass('hidden');
                 }
                 else {
-                    jQuery('#' + perentSel + '-' + ep_client_id + ' .ep-embed-content-wraper').html(response.embedHtml);
+                    // Replace the content inside the wrapper, keeping the wrapper itself
+                    const wrapperEl = jQuery('#' + perentSel + '-' + ep_client_id);
+                    const parentWrapper = wrapperEl.parent('.ep-embed-content-wraper');
+
+                    if (parentWrapper.length > 0) {
+                        // If there's a parent .ep-embed-content-wraper, replace its content
+                        parentWrapper.html(response.embedHtml);
+                    } else {
+                        // Otherwise replace the wrapper content directly
+                        wrapperEl.html(response.embedHtml);
+                    }
 
                     if (jQuery('#' + perentSel + '-' + ep_client_id + ' .ose-youtube').length > 0) {
                         epGlobals.youtubeChannelGallery();
@@ -390,10 +400,11 @@ let epGlobals = {};
                     }
 
                     // Custom player initialization when content protection enabled
-                    document.querySelector('#' + perentSel + '-' + ep_client_id + ' .ep-embed-content-wraper')?.classList?.remove('plyr-initialized');
+                    const targetEl = parentWrapper.length > 0 ? parentWrapper[0] : wrapperEl[0];
+                    targetEl?.classList?.remove('plyr-initialized');
 
                     if (typeof initPlayer === 'function') {
-                        initPlayer(document.querySelector('#' + perentSel + '-' + ep_client_id + ' .ep-embed-content-wraper'));
+                        initPlayer(targetEl);
                     }
                     if (embedpressFrontendData.isProPluginActive) {
                         const adIdEl = document.querySelector('#' + perentSel + '-' + ep_client_id + ' [data-sponsored-id]');
