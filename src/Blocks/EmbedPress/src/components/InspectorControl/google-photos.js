@@ -46,6 +46,7 @@ export const getGooglePhotosParams = (params, attributes) => {
         backgroundColor: '',
         expiration: 0,
         photos_link: true,
+        showTitle: true,
     };
 
     return getParams(params, attributes, defaults);
@@ -67,6 +68,7 @@ export const useGooglePhotos = (attributes) => {
         backgroundColor: null,
         expiration: null,
         photos_link: null,
+        showTitle: null,
     };
 
     const param = getParams({}, attributes, defaults);
@@ -98,6 +100,7 @@ export default function GooglePhotos({ attributes, setAttributes }) {
         backgroundColor,
         expiration,
         photos_link,
+        showTitle,
     } = attributes;
 
     const colors = [
@@ -215,10 +218,16 @@ export default function GooglePhotos({ attributes, setAttributes }) {
                             <ToggleControl
                                 label={__('Enable Visit Google Photos Link', 'embedpress')}
                                 checked={photos_link}
-                                onChange={(photos_link) => setAttributes({ photos_link })}
+                                onChange={(val) => setAttributes({ photos_link: val })}
                                 help={__('Enable an external link icon to visit the original Google Photos album', 'embedpress')}
                             />
                         )}
+
+                        <ToggleControl
+                            label={__('Show Title', 'embedpress')}
+                            checked={showTitle}
+                            onChange={(val) => setAttributes({ showTitle: val })}
+                        />
                     </PanelBody>
                 </div>
             )}

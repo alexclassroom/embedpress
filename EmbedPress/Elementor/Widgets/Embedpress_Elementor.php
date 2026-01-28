@@ -3721,6 +3721,20 @@ class Embedpress_Elementor extends Widget_Base
 			);
 		}
 
+		$this->add_control(
+			'showTitle',
+			[
+				'label' => __('Show Title', 'embedpress'),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => __('Yes', 'embedpress'),
+				'label_off' => __('No', 'embedpress'),
+				'default' => 'yes',
+				'condition' => [
+					'embedpress_pro_embeded_source' => 'google_photos',
+				],
+			]
+		);
+
 
 		// Player Autoplay, Delay, and Repeat
 		$this->add_control(
@@ -4478,6 +4492,8 @@ class Embedpress_Elementor extends Widget_Base
 
         $_settings = Helper::removeQuote($_settings);
 
+
+
 		// Map Meetup-specific settings to shortcode attributes
 		if (strpos($embed_link, 'meetup.com') !== false) {
 			if (isset($settings['meetup_orderby'])) {
@@ -4649,6 +4665,7 @@ class Embedpress_Elementor extends Widget_Base
 						<?php echo isset($settings['custom_player_preset']) ? esc_attr($settings['custom_player_preset']) : ''; ?>
 						<?php echo esc_attr($this->get_instafeed_layout($settings)); ?>
 						<?php echo esc_attr('ep-google-photos-'.$settings['mode']); ?>
+						<?php echo 'data-show-title="' . (isset($settings['showTitle']) ? $settings['showTitle'] : 'yes') . '"'; ?>
 						<?php echo esc_attr($hosted_format); ?>"
 						<?php echo $data_playerid; ?>
 						<?php echo $data_carouselid; ?>
