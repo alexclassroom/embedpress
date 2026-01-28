@@ -352,8 +352,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 = [4.4.9] – 2026-01-28 =
 - Improved: Added enable/disable options for Google Photos title and date 
 - Fixed: YouTube gallery preview not showing in Elementor 
-- Fixed: Database error in EmbedPress analytics views Few minor bug fixes and improvements
-- Minor bug fixes and improvements.
+- Fixed: Database error in EmbedPress analytics views
+- Few minor bug fixes and improvements
 
 = [4.4.8] – 2026-01-5 =
 - Fixed: PDF block accessibility issue with missing iframe title.
