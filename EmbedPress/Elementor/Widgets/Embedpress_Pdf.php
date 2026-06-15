@@ -805,7 +805,7 @@ class Embedpress_Pdf extends Widget_Base
             'pdf_flipbook_rtl',
             [
                 'label'        => sprintf(__('RTL Page Flip %s', 'embedpress'), $this->pro_text),
-                'description'  => __('Flip pages right-to-left, like a Quran or Arabic/Hebrew book.', 'embedpress'),
+                'description'  => __('Reverse the page-turn direction so the flipbook opens and flips from right to left.', 'embedpress'),
                 'type'         => Controls_Manager::SWITCHER,
                 'label_on'     => __('On', 'embedpress'),
                 'label_off'    => __('Off', 'embedpress'),

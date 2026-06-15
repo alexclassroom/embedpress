@@ -666,7 +666,7 @@ class Embedpress_Pdf_Gallery extends Widget_Base
             'flipbook_rtl',
             [
                 'label' => sprintf(__('RTL Page Flip %s', 'embedpress'), $this->pro_text),
-                'description' => __('Flip pages right-to-left, like a Quran or Arabic/Hebrew book.', 'embedpress'),
+                'description' => __('Reverse the page-turn direction so the flipbook opens and flips from right to left.', 'embedpress'),
                 'type' => Controls_Manager::SWITCHER,
                 'default' => '',
                 'classes' => $this->pro_class,
