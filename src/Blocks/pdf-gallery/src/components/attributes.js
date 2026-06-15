@@ -129,6 +129,10 @@ const attributes = {
         type: 'string',
         default: 'bottom',
     },
+    flipbookPageFlipRTL: {
+        type: 'boolean',
+        default: false,
+    },
     presentation: {
         type: 'boolean',
         default: true,
