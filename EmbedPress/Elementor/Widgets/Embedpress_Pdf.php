@@ -801,6 +801,23 @@ class Embedpress_Pdf extends Widget_Base
             ]
         );
 
+        $this->add_control(
+            'pdf_flipbook_rtl',
+            [
+                'label'        => sprintf(__('RTL Page Flip %s', 'embedpress'), $this->pro_text),
+                'description'  => __('Flip pages right-to-left, like a Quran or Arabic/Hebrew book.', 'embedpress'),
+                'type'         => Controls_Manager::SWITCHER,
+                'label_on'     => __('On', 'embedpress'),
+                'label_off'    => __('Off', 'embedpress'),
+                'return_value' => 'yes',
+                'default'      => '',
+                'classes'      => $this->pro_class,
+                'condition' => [
+                    'embedpress_pdf_viewer_style' => 'flip-book',
+                ],
+            ]
+        );
+
 
         $this->add_control(
             'pdf_presentation_mode',
@@ -1196,6 +1213,7 @@ class Embedpress_Pdf extends Widget_Base
             'bookmark' => !empty($settings['pdf_bookmark'])  ? 'true' : 'false',
             'sound' => !empty($settings['pdf_sound'])  ? 'true' : 'false',
             'flipbook_toolbar_position' => !empty($settings['flipbook_toolbar_position'])  ? $settings['flipbook_toolbar_position'] : 'bottom',
+            'flipbook_rtl' => defined('EMBEDPRESS_SL_ITEM_SLUG') && !empty($settings['pdf_flipbook_rtl']) && $settings['pdf_flipbook_rtl'] === 'yes' ? 'true' : 'false',
             'selection_tool' => isset($settings['selection_tool']) ? esc_attr($settings['selection_tool']) : '0',
             'scrolling' => isset($settings['scrolling']) ? esc_attr($settings['scrolling']) : '-1',
             'spreads' => isset($settings['spreads']) ? esc_attr($settings['spreads']) : '-1',

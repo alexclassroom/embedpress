@@ -64,6 +64,10 @@ const attributes = {
         type: "string",
         default: 'bottom',
     },
+    flipbookPageFlipRTL: {
+        type: "boolean",
+        default: false,
+    },
 
     // Toolbar Controls
     download: {

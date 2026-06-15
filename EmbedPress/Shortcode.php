@@ -1341,6 +1341,7 @@ KAMAL;
             'bookmark' => isset($attributes['bookmark'])  ? $attributes['bookmark'] : 'true',
             'sound' => isset($attributes['sound'])  ? $attributes['sound'] : 'true',
             'flipbook_toolbar_position' => !empty($attributes['toolbar_position'])  ? $attributes['toolbar_position'] : 'bottom',
+            'flipbook_rtl' => defined('EMBEDPRESS_SL_ITEM_SLUG') && isset($attributes['flipbook_rtl']) && ($attributes['flipbook_rtl'] === 'true' || $attributes['flipbook_rtl'] === true) ? 'true' : 'false',
             'pageNumber' => isset($attributes['page_number']) ? absint($attributes['page_number']) : 1,
             'watermark_text' => defined('EMBEDPRESS_SL_ITEM_SLUG') && isset($attributes['watermarkText']) ? esc_attr($attributes['watermarkText']) : '',
             'watermark_font_size' => defined('EMBEDPRESS_SL_ITEM_SLUG') && isset($attributes['watermarkFontSize']) ? esc_attr($attributes['watermarkFontSize']) : '48',
