@@ -40,6 +40,7 @@ const Save = ({ attributes }) => {
         lazyLoad,
         position,
         flipbook_toolbar_position,
+        flipbookPageFlipRTL,
         download,
         add_text,
         draw,
@@ -151,6 +152,8 @@ const Save = ({ attributes }) => {
             zoom_out: zoomOut ? zoomOut : false,
             fit_view: fitView ? fitView : false,
             bookmark: bookmark ? bookmark : false,
+            // Emit only when enabled so existing posts regenerate byte-identical markup.
+            ...(flipbookPageFlipRTL ? { flipbook_rtl: true } : {}),
             selection_tool: selection_tool ? selection_tool : '0',
             scrolling: scrolling ? scrolling : '-1',
             spreads: spreads ? spreads : '0',
@@ -227,6 +230,8 @@ const Save = ({ attributes }) => {
             zoom_out: zoomOut || false,
             fit_view: fitView || false,
             bookmark: bookmark || false,
+            // Emit only when enabled so existing posts regenerate byte-identical markup.
+            ...(flipbookPageFlipRTL ? { flipbook_rtl: true } : {}),
             selection_tool: selection_tool || '0',
             scrolling: scrolling || '-1',
             spreads: spreads || '0',

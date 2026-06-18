@@ -53,7 +53,7 @@ const Inspector = ({ attributes, setAttributes }) => {
         viewerStyle, themeMode, customColor, toolbar, position,
         flipbook_toolbar_position, presentation, download,
         copy_text, draw, add_text, add_image, doc_rotation,
-        doc_details, zoomIn, zoomOut, fitView, bookmark,
+        doc_details, zoomIn, zoomOut, fitView, bookmark, flipbookPageFlipRTL,
         watermarkText, watermarkFontSize, watermarkColor,
         watermarkOpacity, watermarkStyle,
     } = attributes;
@@ -95,6 +95,7 @@ const Inspector = ({ attributes, setAttributes }) => {
     const printPlaceholder = applyFilters('embedpress.togglePlaceholder', [], __('Print/Download', 'embedpress'), true);
     const drawPlaceholder = applyFilters('embedpress.togglePlaceholder', [], __('Draw', 'embedpress'), false);
     const copyPlaceholder = applyFilters('embedpress.togglePlaceholder', [], __('Copy Text', 'embedpress'), true);
+    const flipbookRtlPlaceholder = applyFilters('embedpress.togglePlaceholder', [], __('RTL Page Flip', 'embedpress'), flipbookPageFlipRTL);
 
     return (
         <InspectorControls key="inspector">
@@ -440,6 +441,7 @@ const Inspector = ({ attributes, setAttributes }) => {
                                     checked={bookmark}
                                     onChange={(val) => setAttributes({ bookmark: val })}
                                 />
+                                {wrapFiltered(applyFilters('embedpress.pdfControls', [flipbookRtlPlaceholder], attributes, setAttributes, 'flipbookRtl'))}
                             </Fragment>
                         )}
                     </Fragment>

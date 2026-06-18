@@ -39,6 +39,7 @@ const Save = ({ attributes }) => {
         zoomOut,
         fitView,
         bookmark,
+        flipbookPageFlipRTL,
         watermarkText,
         watermarkFontSize,
         watermarkColor,
@@ -91,6 +92,8 @@ const Save = ({ attributes }) => {
             zoom_out: zoomOut || false,
             fit_view: fitView || false,
             bookmark: bookmark || false,
+            // Emit only when enabled so existing posts regenerate byte-identical markup.
+            ...(flipbookPageFlipRTL ? { flipbook_rtl: true } : {}),
             watermark_text: watermarkText || '',
             watermark_font_size: watermarkFontSize || '48',
             watermark_color: watermarkColor || '#000000',

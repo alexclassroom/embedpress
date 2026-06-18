@@ -274,7 +274,7 @@ function Edit(props) {
 	}, []);
 
 	// Extract attributes
-	const { mime, id, unitoption, width, height, powered_by, themeMode, customColor, presentation, lazyLoad, position, flipbook_toolbar_position, download, add_text, draw, open, toolbar, copy_text, toolbar_position, doc_details, doc_rotation, add_image, selection_tool, scrolling, spreads, sharePosition, contentShare, adManager, adSource, adFileUrl, adWidth, adHeight, adXPosition, adYPosition, viewerStyle, displayMode, lightboxThumbnail, lightboxAlign, triggerText, triggerColor, triggerBgColor, triggerFontSize, triggerBorderRadius, zoomIn, zoomOut, fitView, bookmark, customlogo, pageNumber, watermarkText, watermarkFontSize, watermarkColor, watermarkOpacity, watermarkStyle, showViewCount = false, showDownloadCount = false, viewCountPosition = 'below' } = attributes;
+	const { mime, id, unitoption, width, height, powered_by, themeMode, customColor, presentation, lazyLoad, position, flipbook_toolbar_position, download, add_text, draw, open, toolbar, copy_text, toolbar_position, doc_details, doc_rotation, add_image, selection_tool, scrolling, spreads, sharePosition, contentShare, adManager, adSource, adFileUrl, adWidth, adHeight, adXPosition, adYPosition, viewerStyle, displayMode, lightboxThumbnail, lightboxAlign, triggerText, triggerColor, triggerBgColor, triggerFontSize, triggerBorderRadius, zoomIn, zoomOut, fitView, bookmark, flipbookPageFlipRTL, customlogo, pageNumber, watermarkText, watermarkFontSize, watermarkColor, watermarkOpacity, watermarkStyle, showViewCount = false, showDownloadCount = false, viewCountPosition = 'below' } = attributes;
 
 	// When Dynamic Source is configured, preview the resolved custom-field URL
 	// (fetched by the Dynamic Source control into dynamicPreviewUrl) so the
@@ -365,6 +365,7 @@ function Edit(props) {
 			zoom_out: zoomOut ? zoomOut : false,
 			fit_view: fitView ? fitView : false,
 			bookmark: bookmark ? bookmark : false,
+			...(flipbookPageFlipRTL ? { flipbook_rtl: true } : {}),
 			selection_tool: selection_tool ? selection_tool : '0',
 			scrolling: scrolling ? scrolling : '-1',
 			spreads: spreads ? spreads : '0',
