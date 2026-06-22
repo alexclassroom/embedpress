@@ -226,8 +226,6 @@ class LocalizationManager
             'viewCount' => [
                 'restUrl'         => esc_url_raw(get_rest_url(null, 'embedpress/v1/analytics/view-count')),
                 'downloadUrl'     => esc_url_raw(get_rest_url(null, 'embedpress/v1/analytics/download-count')),
-                'viewEnabled'     => \EmbedPress\Includes\Classes\View_Count_Display::is_enabled(),
-                'downloadEnabled' => \EmbedPress\Includes\Classes\View_Count_Display::is_download_enabled(),
                 'labels'          => [
                     /* translators: %s: formatted number of views */
                     'singular'         => __('%s view', 'embedpress'),

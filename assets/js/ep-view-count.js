@@ -55,19 +55,65 @@
             || '';
     }
 
-    function deriveContentId(el, embedType) {
-        var existing = el.getAttribute('data-embedpress-content')
-            || el.getAttribute('data-source-id')
-            || el.getAttribute('data-emid');
-        if (existing) return existing;
-        var url = getEmbedUrl(el);
-        var hash = '';
-        try {
-            hash = btoa(unescape(encodeURIComponent(url))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
-        } catch (e) {
-            hash = String(url.length);
+    // A source-id is only usable if it actually identifies the embed. Blocks
+    // render data-source-id={`source-${clientId}`}; when clientId was undefined
+    // at save time that becomes the literal "source-undefined", which is shared
+    // by EVERY such embed — collapsing their counts into one ever-growing tally.
+    // Reject that (and any blank) so we fall back to a per-instance id instead.
+    function isUsableId(v) {
+        return !!v && v !== 'source-undefined' && v !== 'undefined' && v !== 'source-' && v !== 'source-null';
+    }
+
+    // Deterministic index of `el` among all embeds that resolve to the SAME
+    // url-hash, in DOCUMENT order. This must NOT depend on processing order:
+    // the flipbook and modern viewers load asynchronously, so a process-order
+    // counter would assign a different suffix to the same embed across reloads
+    // — splitting its count and making it look like counting "stopped". DOM
+    // order is fixed by the saved post content, so this is stable per instance.
+    function sameHashIndex(el, hash) {
+        var nodes = document.querySelectorAll('[data-embed-type]');
+        var idx = 0;
+        for (var i = 0; i < nodes.length; i++) {
+            // Skip nested embeds (handled by their own outer wrapper).
+            if (nodes[i].parentElement && nodes[i].parentElement.closest('[data-embed-type]')) continue;
+            if (urlHash(getEmbedUrl(nodes[i])) !== hash) continue;
+            if (nodes[i] === el) return idx;
+            idx++;
         }
-        var contentId = 'ep-' + embedType + '-' + hash;
+        return idx;
+    }
+
+    // Distinctive hash over the FULL url. A previous version base64-encoded the
+    // url and kept the first 10 chars — but every "https://…" base64 starts with
+    // the same "aHR0cHM6Ly" prefix, so different files collapsed to one hash and
+    // then fought over a per-instance suffix. A djb2-style hash of the whole
+    // string keeps distinct files distinct.
+    function urlHash(url) {
+        url = String(url || '');
+        var h = 5381;
+        for (var i = 0; i < url.length; i++) {
+            h = ((h << 5) + h + url.charCodeAt(i)) >>> 0; // h * 33 + c, unsigned
+        }
+        return h.toString(36);
+    }
+
+    function deriveContentId(el, embedType) {
+        var stored = el.getAttribute('data-embedpress-content');
+        if (isUsableId(stored)) return stored;
+
+        var existing = el.getAttribute('data-source-id') || el.getAttribute('data-emid');
+        if (isUsableId(existing)) {
+            el.setAttribute('data-embedpress-content', existing);
+            return existing;
+        }
+
+        // No usable saved id (e.g. "source-undefined"): build a stable id from
+        // the file URL + this embed's DOCUMENT-ORDER index among same-file
+        // embeds, so multiple embeds of the same file are counted separately
+        // AND each keeps the same id across reloads.
+        var url = getEmbedUrl(el);
+        var hash = urlHash(url);
+        var contentId = 'ep-' + embedType + '-' + hash + '-' + sameHashIndex(el, hash);
         el.setAttribute('data-embedpress-content', contentId);
         return contentId;
     }
@@ -342,29 +388,59 @@
         // so a per-embed opt-in still tracks when the global default is off.
         if (!cfg.downloadTrackUrl) return;
 
+        // Resolve which embed sent the download. The PDF.js viewer runs at
+        // admin-ajax.php (same origin), so `iframe.contentWindow === ev.source`
+        // is the primary match. Firefox, however, does not always keep that
+        // identity stable across the viewer's internal reloads/bfcache, so we
+        // fall back to matching the viewer iframe by its own `file=` src — the
+        // most reliable cross-browser signal — before the host-URL fallback.
         var sourceFrame = null;
         try {
-            // event.source is a Window; locate its iframe in the host doc.
             var frames = document.getElementsByTagName('iframe');
             for (var i = 0; i < frames.length; i++) {
                 if (frames[i].contentWindow === ev.source) { sourceFrame = frames[i]; break; }
             }
-        } catch (e) { /* cross-origin — try fallback by href below */ }
+        } catch (e) { /* cross-origin — try fallbacks below */ }
 
-        // Only accept a frame match that resolves to a real embed wrapper —
-        // if the source iframe isn't inside one (e.g. an unrelated frame
-        // postMessaged) we fall through to URL matching below.
         var el = sourceFrame ? sourceFrame.closest('[data-embed-type]') : null;
+
+        // Firefox fallback: the message carries the viewer's own href, whose
+        // `file=` param identifies the PDF. Match the iframe whose src points
+        // at the same file and resolve ITS wrapper — this credits a correct
+        // instance even when contentWindow identity didn't hold.
         if (!el) {
-            // Fallback: match by file= URL when no frame match.
             try {
-                var u = new URL(data.href || '', window.location.href);
-                var fileParam = u.searchParams.get('file');
-                if (fileParam) {
-                    var target = decodeURIComponent(fileParam);
-                    document.querySelectorAll('[data-embed-type]').forEach(function (n) {
-                        if (!el && getEmbedUrl(n) === target) el = n;
-                    });
+                // Prefer the explicit `file` the viewer sent (flipbook runs in a
+                // blank frame, so its href has no file= to parse). Fall back to
+                // parsing href's file= query for the classic PDF.js viewer.
+                var target = '';
+                if (data.file) {
+                    target = data.file;
+                } else {
+                    var u = new URL(data.href || '', window.location.href);
+                    var fileParam = u.searchParams.get('file');
+                    if (fileParam) target = decodeURIComponent(fileParam);
+                }
+                if (target) {
+                    var iframes = document.getElementsByTagName('iframe');
+                    for (var k = 0; k < iframes.length && !el; k++) {
+                        var isrc = iframes[k].getAttribute('src') || '';
+                        if (isrc.indexOf('file=') === -1) continue;
+                        try {
+                            var iu = new URL(isrc, window.location.href);
+                            var ifile = iu.searchParams.get('file');
+                            if (ifile && decodeURIComponent(ifile) === target) {
+                                el = iframes[k].closest('[data-embed-type]');
+                            }
+                        } catch (e2) { /* skip this iframe */ }
+                    }
+                    // Last resort: match an embed wrapper by its resolved URL.
+                    if (!el) {
+                        var nodes = document.querySelectorAll('[data-embed-type]');
+                        for (var n = 0; n < nodes.length && !el; n++) {
+                            if (getEmbedUrl(nodes[n]) === target) el = nodes[n];
+                        }
+                    }
                 }
             } catch (e) { /* ignore */ }
         }
@@ -374,6 +450,14 @@
         var embedType = el.getAttribute('data-embed-type');
         var contentId = el.getAttribute('data-embedpress-content') || deriveContentId(el, embedType);
         var embedUrl  = getEmbedUrl(el);
+
+        // Optimistically bump the visible count NOW so it feels instant — the
+        // flipbook's watermark/blob download and the REST round-trip can take a
+        // moment, and waiting for the server response made the badge look like
+        // it wasn't reacting. Reconcile with the authoritative count below.
+        var current = parseInt(el.getAttribute('data-ep-download-count') || '0', 10);
+        if (isNaN(current)) current = 0;
+        setDownloadCount(el, current + 1);
 
         postForm(cfg.downloadTrackUrl, {
             content_id: contentId,

@@ -44,31 +44,6 @@ class View_Count_Display
         ]);
     }
 
-    /**
-     * Master toggle for the visitor-facing view-count badge.
-     * Independent of `embedpress_analytics_tracking_enabled`: when this is on
-     * the badge renders (and self-records views) regardless of whether the
-     * analytics dashboard / tracker is enabled.
-     */
-    const OPTION_ENABLED = 'embedpress_show_visitor_view_count';
-    const OPTION_DOWNLOAD_ENABLED = 'embedpress_show_download_counter';
-
-    public static function is_enabled()
-    {
-        return (bool) apply_filters(
-            'embedpress_show_view_count',
-            get_option(self::OPTION_ENABLED, false)
-        );
-    }
-
-    public static function is_download_enabled()
-    {
-        return (bool) apply_filters(
-            'embedpress_show_download_counter',
-            get_option(self::OPTION_DOWNLOAD_ENABLED, false)
-        );
-    }
-
     public static function register()
     {
         add_action('rest_api_init', [self::class, 'register_rest_route']);
@@ -169,10 +144,9 @@ class View_Count_Display
      */
     public static function rest_track_download($request)
     {
-        if (!self::is_download_enabled()) {
-            return rest_ensure_response(['recorded' => false, 'count' => 0]);
-        }
-
+        // No global on/off switch: the counter is controlled solely by the
+        // per-embed "Show Download Count" toggle (data-ep-downloads="on"), which
+        // gates both the badge render and whether this endpoint is ever called.
         global $wpdb;
         $content_id = (string) $request->get_param('content_id');
         $session_id = (string) ($request->get_param('session_id') ?: '');
@@ -214,7 +188,9 @@ class View_Count_Display
     public static function rest_get_view_count($request)
     {
         $content_id = (string) $request->get_param('content_id');
-        $count      = (new Data_Collector())->get_view_count_by_content_id($content_id);
+        // Badge shows only its own (visitor_view_count) rows so the analytics
+        // tracker's scroll-driven view rows can't inflate it.
+        $count      = (new Data_Collector())->get_visitor_view_count_by_content_id($content_id);
 
         return rest_ensure_response([
             'content_id' => $content_id,
@@ -236,10 +212,9 @@ class View_Count_Display
      */
     public static function rest_track_view($request)
     {
-        if (!self::is_enabled()) {
-            return rest_ensure_response(['recorded' => false, 'count' => 0]);
-        }
-
+        // No global on/off switch: the counter is controlled solely by the
+        // per-embed "Show View Count" toggle (data-ep-views="on"), which gates
+        // both the badge render and whether this endpoint is ever called.
         global $wpdb;
         $content_id = (string) $request->get_param('content_id');
         $session_id = (string) ($request->get_param('session_id') ?: '');
@@ -270,7 +245,7 @@ class View_Count_Display
             'created_at'       => current_time('mysql'),
         ]);
 
-        $count = (new Data_Collector())->get_view_count_by_content_id($content_id);
+        $count = (new Data_Collector())->get_visitor_view_count_by_content_id($content_id);
         return rest_ensure_response([
             'recorded'   => true,
             'content_id' => $content_id,
@@ -361,8 +336,6 @@ class View_Count_Display
             'trackUrl'          => esc_url_raw(rest_url(self::REST_NAMESPACE . '/analytics/view-count/track')),
             'downloadUrl'       => esc_url_raw(rest_url(self::REST_NAMESPACE . '/analytics/download-count')),
             'downloadTrackUrl'  => esc_url_raw(rest_url(self::REST_NAMESPACE . '/analytics/view-count/download')),
-            'viewEnabled'       => self::is_enabled(),
-            'downloadEnabled'   => self::is_download_enabled(),
             // Count-badge positioning is a Pro feature — only the default
             // ('below') placement is free. The frontend ignores any Pro
             // position when Pro is inactive so the badge falls back to default.

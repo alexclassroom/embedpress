@@ -19,13 +19,16 @@ const cfg = (typeof embedpressGutenbergData !== 'undefined' && embedpressGutenbe
  * preview count consistent with the frontend for the same embed URL.
  */
 function deriveContentId(url, embedType) {
-    let hash = '';
-    try {
-        hash = btoa(unescape(encodeURIComponent(url || ''))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
-    } catch (e) {
-        hash = String((url || '').length);
+    // Mirror static/js/ep-view-count.js urlHash(): a djb2 hash over the FULL url.
+    // (The old base64+substring(0,10) collapsed every "https://…" to the same
+    // prefix, so different files shared one count.) The editor has a single
+    // block instance, so no per-instance index is needed here.
+    const s = String(url || '');
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
     }
-    return 'ep-' + embedType + '-' + hash;
+    return 'ep-' + embedType + '-' + h.toString(36);
 }
 
 function fmt(template, n) {
