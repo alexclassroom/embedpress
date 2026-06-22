@@ -457,6 +457,14 @@ class Shortcode
             $embedTemplate = '<div ' . implode(' ', $attributesHtml) . $embedTypeAttr . '>{html}</div>';
 
             $parsedContent = self::get_content_from_template($url, $embedTemplate, $serviceProvider);
+            // Embera's ResponsiveEmbeds::addClasses() runs a global
+            // `class="(.+?)"` replace. When an oEmbed payload carries a
+            // wrapper element with a class AND an iframe with an empty
+            // class="" (Sketchfab, Flourish, …), the non-greedy capture
+            // jumps the gap and swallows the iframe's ` src="` opening
+            // quote, leaving `src= <classtokens>"<URL>"`. Restore a proper
+            // quoted src before any later transform can truncate the URL.
+            $parsedContent = self::repair_responsive_class_corruption($parsedContent, $url);
             // Replace all single quotes to double quotes. I.e: foo='joe' -> foo="joe"
             $parsedContent = str_replace("'", '"', $parsedContent);
             $parsedContent = str_replace("{provider_alias}", esc_html($provider_name), $parsedContent);
@@ -1043,6 +1051,46 @@ KAMAL;
     public static function get_collection()
     {
         return self::$collection;
+    }
+
+    /**
+     * Repairs an iframe whose `src` was corrupted by Embera's responsive
+     * class injection (see ResponsiveEmbeds::addClasses()).
+     *
+     * The corruption signature is a `src=` that is NOT immediately followed
+     * by a quote — instead the responsive-item class tokens leak in:
+     *   src= embera-embed-responsive-item embera-embed-responsive-item-rich"<URL>"
+     * The real URL is still intact between the stray quote and the next
+     * quote, so we drop the leaked tokens and restore a proper quoted src.
+     *
+     * @param string $html The (possibly corrupted) embed markup.
+     * @param string $url  The original embed URL (kept for signature stability).
+     * @return string
+     */
+    protected static function repair_responsive_class_corruption($html, $url)
+    {
+        // Fast bail: only act on the exact corruption signature so we never
+        // touch healthy embeds. The injected tokens always land right after
+        // an unquoted `src=`, i.e.  src= embera-embed-responsive-item …
+        if (strpos($html, 'src= embera-embed-responsive-item') === false) {
+            return $html;
+        }
+
+        // The damage is mechanically reversible from the string itself:
+        // addClasses() consumed the iframe's `src="` opening quote, so the
+        // markup now reads
+        //   src= embera-embed-responsive-item embera-embed-responsive-item-<type>"<URL>"
+        // The real URL is still intact between the stray quote and the next
+        // quote — we just drop the leaked class tokens and restore a proper
+        // quoted `src`. The iframe keeps its own (empty) class="" attribute,
+        // and the responsive-item class already lives on the wrapper <div>,
+        // so nothing else needs re-adding.
+        return preg_replace(
+            '~src=\s+embera-embed-responsive-item\s+embera-embed-responsive-item-[a-z0-9_-]+\s*"([^"]+)"~i',
+            'src="$1"',
+            $html,
+            1
+        );
     }
 
     protected static function purify_html_content(&$html)
