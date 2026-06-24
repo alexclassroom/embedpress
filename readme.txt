@@ -349,9 +349,9 @@ With EmbedPress you can easily create PDF flipbooks. First, upload PDF into your
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-= [4.5.6] – 2026-06-23 =
+= [4.5.6] – 2026-06-24 =
 - Improved: PDF download count now increments on every download.
-- Improved: View Count positioning controls for PDF embeds.
+- Added: View Count positioning controls for PDF embeds.
 - Fixed: PDF block placeholder not selectable before uploading a PDF.
 - Fixed: Google Photos block showing an empty URL when re-editing.
 - Fixed: Missing SameSite attribute for the ep_session_id cookie.
